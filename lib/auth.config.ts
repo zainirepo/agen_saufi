@@ -6,13 +6,18 @@ export const authConfig: NextAuthConfig = {
   callbacks: {
     jwt: async ({ token, user }) => {
       if (user) {
-        token.role = (user as { role: string }).role;
+        const u = user as { role: "CEO" | "ADMIN"; profilePicUrl?: string | null };
+        token.role = u.role;
+        token.profilePicUrl = u.profilePicUrl ?? null;
+        token.sub = user.id;
       }
       return token;
     },
     session: async ({ session, token }) => {
       if (session.user) {
-        (session.user as { role?: string }).role = token.role as string | undefined;
+        session.user.id = token.sub as string;
+        session.user.role = token.role as "CEO" | "ADMIN";
+        session.user.profilePicUrl = token.profilePicUrl as string | null | undefined;
       }
       return session;
     },

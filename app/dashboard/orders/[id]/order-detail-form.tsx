@@ -9,6 +9,7 @@ import type { OrderModel as Order } from "@/app/generated/prisma/models";
 export default function OrderDetailForm({ order }: { order: Order }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
@@ -33,6 +34,8 @@ export default function OrderDetailForm({ order }: { order: Order }) {
         if (!file.name.toLowerCase().endsWith(".zip")) {
           throw new Error("File harus berformat .zip");
         }
+        setUploading(true);
+        setProgress(0);
         const blob = await upload(file.name, file, {
           access: "public",
           handleUploadUrl: "/api/blob/upload",
@@ -41,6 +44,7 @@ export default function OrderDetailForm({ order }: { order: Order }) {
         fileUrl = blob.url;
         fileName = file.name;
         fileSize = file.size;
+        setUploading(false);
       }
 
       const res = await fetch(`/api/orders/${order.id}`, {
@@ -60,8 +64,11 @@ export default function OrderDetailForm({ order }: { order: Order }) {
       setError((err as Error).message);
     } finally {
       setSubmitting(false);
+      setUploading(false);
     }
   }
+
+  const busy = submitting || uploading;
 
   async function handleDelete() {
     if (!confirm("Hapus order ini beserta file-nya? Tindakan tidak bisa dibatalkan.")) return;
@@ -129,9 +136,12 @@ export default function OrderDetailForm({ order }: { order: Order }) {
           </p>
         )}
         <input type="file" accept=".zip" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="w-full text-sm" />
-        {submitting && file && (
-          <div className="mt-2 h-2 w-full rounded bg-gray-200">
-            <div className="h-2 rounded bg-blue-600" style={{ width: `${progress}%` }} />
+        {uploading && (
+          <div className="mt-2">
+            <div className="h-2 w-full rounded bg-gray-200">
+              <div className="h-2 rounded bg-blue-600 transition-all" style={{ width: `${progress}%` }} />
+            </div>
+            <p className="mt-1 text-xs text-gray-500">Mengunggah file... {progress}%</p>
           </div>
         )}
       </div>
@@ -141,10 +151,10 @@ export default function OrderDetailForm({ order }: { order: Order }) {
       <div className="flex gap-2">
         <button
           type="submit"
-          disabled={submitting}
+          disabled={busy}
           className="flex-1 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
         >
-          {submitting ? "Menyimpan..." : "Simpan Perubahan"}
+          {uploading ? "Mengunggah file..." : submitting ? "Menyimpan..." : "Simpan Perubahan"}
         </button>
         <Link
           href="/dashboard"
@@ -155,7 +165,7 @@ export default function OrderDetailForm({ order }: { order: Order }) {
         <button
           type="button"
           onClick={handleDelete}
-          disabled={submitting}
+          disabled={busy}
           className="rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
         >
           Hapus
