@@ -72,18 +72,18 @@ export default function DataTable<T extends { id: string }>({
             setPage(1);
           }}
           placeholder={searchPlaceholder}
-          className="w-full max-w-xs rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
+          className="w-full max-w-xs rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 focus:border-[var(--color-primary)] focus:outline-none"
         />
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-hidden rounded border border-gray-200 bg-white shadow-sm">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-gray-500">
+          <thead className="border-b-2 border-gray-200 bg-white text-left text-gray-700">
             <tr>
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`px-4 py-3 ${col.sortable ? "cursor-pointer select-none hover:text-gray-700" : ""}`}
+                  className={`px-4 py-3 font-semibold ${col.sortable ? "cursor-pointer select-none hover:text-[var(--color-primary)]" : ""}`}
                   onClick={() => col.sortable && toggleSort(col.key)}
                 >
                   {col.header}
@@ -100,8 +100,8 @@ export default function DataTable<T extends { id: string }>({
                 </td>
               </tr>
             )}
-            {pageData.map((row) => (
-              <tr key={row.id} className="border-t border-gray-100 hover:bg-gray-50">
+            {pageData.map((row, idx) => (
+              <tr key={row.id} className={`border-t border-gray-100 hover:bg-blue-50 ${idx % 2 === 1 ? "bg-gray-50/50" : ""}`}>
                 {columns.map((col) => (
                   <td key={col.key} className="px-4 py-3">
                     {col.render(row)}
@@ -122,14 +122,14 @@ export default function DataTable<T extends { id: string }>({
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="rounded-md border border-gray-300 px-3 py-1 disabled:opacity-40"
+              className="rounded border border-gray-300 px-3 py-1 hover:bg-gray-50 disabled:opacity-40"
             >
               Sebelumnya
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="rounded-md border border-gray-300 px-3 py-1 disabled:opacity-40"
+              className="rounded border border-gray-300 px-3 py-1 hover:bg-gray-50 disabled:opacity-40"
             >
               Berikutnya
             </button>

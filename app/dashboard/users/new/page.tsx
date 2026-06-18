@@ -64,7 +64,7 @@ export default function NewUserPage() {
   return (
     <div className="mx-auto max-w-lg">
       <h1 className="mb-6 text-lg font-semibold text-gray-900">Tambah User</h1>
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
+      <form onSubmit={handleSubmit} className="space-y-4 rounded border border-gray-200 bg-white p-6 shadow-sm">
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Nama</label>
           <input name="name" required className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900" />
@@ -95,7 +95,7 @@ export default function NewUserPage() {
           {uploading && (
             <div className="mt-2">
               <div className="h-2 w-full rounded bg-gray-200">
-                <div className="h-2 rounded bg-blue-600 transition-all" style={{ width: `${progress}%` }} />
+                <div className="h-2 rounded bg-[var(--color-primary)] transition-all" style={{ width: `${progress}%` }} />
               </div>
               <p className="mt-1 text-xs text-gray-500">Mengunggah foto... {progress}%</p>
             </div>
@@ -108,7 +108,7 @@ export default function NewUserPage() {
           <button
             type="submit"
             disabled={busy}
-            className="flex-1 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+            className="flex-1 rounded bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-60"
           >
             {uploading ? "Mengunggah foto..." : submitting ? "Menyimpan..." : "Simpan User"}
           </button>

@@ -19,23 +19,25 @@ export default async function UsersPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-lg font-semibold text-gray-900">Kelola User</h1>
         <Link
           href="/dashboard/users/new"
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)]"
         >
           + Tambah User
         </Link>
       </div>
 
-      <UsersTable
-        users={users.map((u) => ({
-          ...u,
-          createdAt: u.createdAt.toISOString(),
-        }))}
-        currentUserId={session.user.id}
-      />
+      <div className="rounded border border-gray-200 bg-white p-4 shadow-sm md:p-6">
+        <UsersTable
+          users={users.map((u) => ({
+            ...u,
+            createdAt: u.createdAt.toISOString(),
+          }))}
+          currentUserId={session.user.id}
+        />
+      </div>
     </div>
   );
 }
