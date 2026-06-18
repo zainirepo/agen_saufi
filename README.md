@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# agen_saufi
 
-## Getting Started
+App kelola order pembuatan project web: data pemesan (nama, no HP), status pembayaran (Belum/DP/Lunas), dan file project (.zip, sampai ~200MB) per order. Login untuk CEO (Mas Saufi) dan Admin, akses sama (full CRUD).
 
-First, run the development server:
+Stack: Next.js (App Router) + Prisma + PostgreSQL + NextAuth (credentials) + Vercel Blob (client upload).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Jalan di laptop (Docker, Windows 10/11)
+
+Prasyarat: [Docker Desktop](https://www.docker.com/products/docker-desktop/) (WSL2 backend) terpasang dan jalan.
+
+1. Copy `.env.example` ke `.env`, isi `BLOB_READ_WRITE_TOKEN` (ambil dari Vercel dashboard > Storage > Blob, buat store dulu kalau belum ada — token tetap dipakai walau dev lokal, karena tidak ada emulator Blob lokal resmi).
+2. Buat `AUTH_SECRET`: `npx auth secret` atau `openssl rand -base64 32`.
+3. Nyalakan app + database:
+   ```
+   docker compose up --build
+   ```
+4. Setelah container `db` jalan, terapkan migration dan seed akun login (jalankan dari host, sekali saja):
+   ```
+   npm install
+   npm run db:migrate
+   npm run db:seed
+   ```
+5. Buka http://localhost:3000 — login pakai `SEED_CEO_EMAIL`/`SEED_CEO_PASSWORD` atau `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD` dari `.env`.
+
+### Dev tanpa Docker (opsional)
+
 ```
+npm install
+npm run dev
+```
+Butuh Postgres jalan di `localhost:5432` (bisa pakai `docker compose up db` saja) dan `DATABASE_URL` di `.env` mengarah ke situ.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deploy ke Vercel
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Buat database di [Neon](https://neon.tech) (Postgres serverless), salin connection string.
+2. Buat Blob store di Vercel dashboard project > Storage, salin `BLOB_READ_WRITE_TOKEN`.
+3. Import repo ke Vercel, set environment variables: `DATABASE_URL` (Neon), `BLOB_READ_WRITE_TOKEN`, `AUTH_SECRET`.
+4. Jalankan migration ke database Neon sebelum/saat deploy pertama:
+   ```
+   DATABASE_URL="<neon-connection-string>" npm run db:migrate
+   DATABASE_URL="<neon-connection-string>" npm run db:seed
+   ```
+5. Deploy. Vercel akan build otomatis (`next build`).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Catatan teknis
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Upload zip pakai **Vercel Blob client upload** (`@vercel/blob/client`) — file dikirim langsung dari browser ke Blob storage via signed token (`app/api/blob/upload/route.ts`), bukan lewat body server function. Ini diperlukan karena Vercel serverless function punya limit body ~4.5MB, sedangkan file project bisa sampai puluhan MB.
+- Hapus order otomatis menghapus file di Blob storage (`app/api/orders/[id]/route.ts`).
+- Role `CEO` dan `ADMIN` punya hak akses identik — field role cuma untuk label tampilan.
